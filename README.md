@@ -36,15 +36,37 @@ Uma equipe precisa de uma API para classificar mensagens curtas enviadas por usu
 Para desenvolver a classificação das mensagens, a classe *Classificador*, criada dentro do script **[check.py](check.py)**, executa todas as tarefas de checagem até que todas as possíveis informações sobre a mensagem sejam preenchidas.
 ```
 class Classificador():
-
     def __init__(self, mensagem):
         self.mensagem = mensagem
+
     def atualizar_mensagem(self, nova_mensagem):
         self.mensagem = nova_mensagem
 
-    # ...
-    # todas as funções de classificação
-    # ...
+    def checar_numeros(self):
+        return any(char.isdigit() for char in self.mensagem)
+
+    def checar_letras(self):
+        return any(char.isalpha() for char in self.mensagem)
+
+    def checar_pontuacao(self):
+        return any(char in string.punctuation for char in self.mensagem)
+
+    def checar_emoji(self):
+        return emoji.emoji_count(self.mensagem) > 0
+
+    def checar_alfabetos(self):
+        scripts = {unicodedata.name(c).split()[0] for c in self.mensagem if c.isalpha()}
+        return len(scripts) > 1
+
+    def checar_links(self):
+        regex = r'(https?://\S+|www\.\S+)'
+        return bool(re.search(regex, self.mensagem))
+
+    def detectar_idioma(self):
+        try:
+            return detect(self.mensagem)
+        except:
+            return "indeterminado"
 
     def retorno_dicionario(self):
         return {
@@ -111,20 +133,63 @@ Dentro de [check.py](check.py), na função de rota, há um pequeno código que 
 O primeiro passo é procurar o arquivo **resposta.json** que, caso não esteja presente, será criado e carregado com a lista _dados_ - desenvolvida para que a biblioteca json possa enviar os dados para o arquivo.
 
 -----
-## Setup (Rascunho)
+## Setup
 Para utilizar a API, o primeiro passo é criar um ambiente virtual e instalar as dependências. Para isso, com python instalado em seu sistema operacional, no terminal, escreva:
 ```
 git clone https://github.com/henriquegalva0/avaliacaopraticabackend.git
+cd avaliacaopraticabackend
 ```
 Depois que todos os arquivos deste projeto forem gerados, escreva:
 ```
-python3 -m venv .venv
+python -m venv .venv
 ```
 Após seu ambiente virtual ser criado, instale todas as dependências dentro dele, executando:
+- Windows
 ```
-.\.venv\Scripts\Activate.ps1 && pip install -r requirements.txt
+    .venv\Scripts\activate.bat && pip install -r requirements.txt
+```
+- Linux
+
+```
+    source .venv/bin/activate && pip install -r requirements.txt
 ```
 Por fim, apenas execute o script [main.py](main.py) com:
 ```
-python3 main.py
+python main.py
 ```
+## Sobre as Bibliotecas
+Para esclarecer a necessidade de cada biblioteca, esta seção explica cada uma delas.
+
+### string
+
+Utilizada para ter acesso à constante punctuation, que contém um conjunto de caracteres de pontuação pré-definidos (como !, ?, ., etc.), permitindo verificar se a mensagem contém esses símbolos.
+
+### unicodedata
+
+Utilizada para identificar a origem técnica de cada caractere. No código, a função unicodedata.name() é usada para extrair o "nome" do caractere no padrão Unicode e identificar a qual alfabeto (script) ele pertence, permitindo detectar se há mais de um alfabeto presente (ex: Latim e Grego).
+
+### emoji
+
+Fornece ferramentas para manipular e analisar caracteres de emoji. No projeto, é utilizada a função emoji_count() para contar quantos emojis existem na mensagem e retornar se ela possui ou não esses símbolos.
+
+### re (Regular Expressions)
+
+Biblioteca de Expressões Regulares do Python. É utilizada para definir um padrão de busca (regex) que identifica estruturas de URLs e links (como http:// ou www.) dentro do texto da mensagem.
+
+### langdetect
+
+Utilizada para identificar automaticamente em qual idioma um texto foi escrito. A função detect() analisa a frequência e o padrão das palavras para retornar o código do idioma predominante (ex: 'pt', 'en').
+
+### json
+
+Responsável por manipular arquivos no formato JSON. No código, ela é usada para converter os resultados da classificação (dicionários Python) em texto formatado para salvar no arquivo resposta.json (json.dump) e também para ler dados existentes (json.load).
+
+### os
+
+Utilizada para interagir com o sistema operacional. No projeto, serve para verificar se o arquivo resposta.json já existe no computador (os.path.exists) e se ele possui conteúdo (os.path.getsize) antes de tentar ler os dados.
+
+### flask
+
+- Flask: O micro-framework usado para criar a aplicação web e gerenciar as rotas.
+- render_template: Função que carrega e exibe o arquivo HTML (index.html) para o usuário, permitindo enviar variáveis do Python para a página.
+- request: Objeto que captura os dados enviados pelo usuário através do formulário (o método POST), permitindo que o servidor receba a mensagem digitada.

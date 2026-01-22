@@ -34,6 +34,29 @@ Uma equipe precisa de uma API para classificar mensagens curtas enviadas por usu
 ## Funcionamento
 ### Checagem
 Para desenvolver a classificação das mensagens, a classe *Classificador*, criada dentro do script **[check.py](check.py)**, executa todas as tarefas de checagem até que todas as possíveis informações sobre a mensagem sejam preenchidas.
+```
+class Classificador():
+
+    def __init__(self, mensagem):
+        self.mensagem = mensagem
+    def atualizar_mensagem(self, nova_mensagem):
+        self.mensagem = nova_mensagem
+
+    # ...
+    # todas as funções de classificação
+    # ...
+
+    def retorno_dicionario(self):
+        return {
+            'numeros': self.checar_numeros(),
+            'letras': self.checar_letras(),
+            'pontuacao': self.checar_pontuacao(),
+            'multiplos_alfabetos': self.checar_alfabetos(),
+            'emojis': self.checar_emoji(),
+            'links': self.checar_links(),
+            'idioma': self.detectar_idioma(),
+        }
+```
 ### Interface HTML
 Para que a equipe possa submeter a mensagem e obtêr feedback ativo, o script **[index.html](templates/index.html)** desenvolve a conexão da API e do usuário pelo método POST em um formulário.
 ```
@@ -72,14 +95,36 @@ Em seguida, declara-se a rota principal com o método GET e POST para submissão
             return render_template('index.html')
 ```
 A função principal é composta pela inicialização do classificador com atualização da mensagem toda vez que uma submissão é feita. Além disso, a função _render_template()_ gerencia a conexão do HTML com a própria API.
+#### Criar JSON
+Dentro de [check.py](check.py), na função de rota, há um pequeno código que será responsável pela completa transformação do dicionário previamente feito em JSON.
+```
+    dados = []
+    if os.path.exists('resposta.json') and os.path.getsize('resposta.json') > 0:
+        with open('resposta.json', 'r') as f:
+            dados = json.load(f)
+    
+    dados.append(classificacao)
+    
+    with open('resposta.json', 'w') as f:
+        json.dump(dados, f, indent=4)
+```
+O primeiro passo é procurar o arquivo **resposta.json** que, caso não esteja presente, será criado e carregado com a lista _dados_ - desenvolvida para que a biblioteca json possa enviar os dados para o arquivo.
 
 -----
 ## Setup (Rascunho)
 Para utilizar a API, o primeiro passo é criar um ambiente virtual e instalar as dependências. Para isso, com python instalado em seu sistema operacional, no terminal, escreva:
-`git clone https://github.com/henriquegalva0/avaliacaopraticabackend.git`
+```
+git clone https://github.com/henriquegalva0/avaliacaopraticabackend.git
+```
 Depois que todos os arquivos deste projeto forem gerados, escreva:
-`python3 -m venv .venv`
+```
+python3 -m venv .venv
+```
 Após seu ambiente virtual ser criado, instale todas as dependências dentro dele, executando:
-`.\.venv\Scripts\Activate.ps1 && pip install -r requirements.txt`
+```
+.\.venv\Scripts\Activate.ps1 && pip install -r requirements.txt
+```
 Por fim, apenas execute o script [main.py](main.py) com:
-`python3 main.py`
+```
+python3 main.py
+```

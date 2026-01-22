@@ -13,38 +13,49 @@ Classificações-alvo do projeto
 import string
 import unicodedata
 import emoji
-
-mensagem_teste="Olá Usuário123, tudo bem com você 😄😁?"
-nova_mensagem_teste="oi"
-
+import re
+from langdetect import detect
 
 class Classificador():
-    def __init__(self,mensagem):
+    def __init__(self, mensagem):
         self.mensagem = mensagem
-        pass
 
-    def atualizar_mensagem(self,nova_mensagem):
+    def atualizar_mensagem(self, nova_mensagem):
         self.mensagem = nova_mensagem
 
     def checar_numeros(self):
         return any(char.isdigit() for char in self.mensagem)
+
     def checar_letras(self):
         return any(char.isalpha() for char in self.mensagem)
+
     def checar_pontuacao(self):
         return any(char in string.punctuation for char in self.mensagem)
+
     def checar_emoji(self):
         return emoji.emoji_count(self.mensagem) > 0
-    
+
+    def checar_alfabetos(self):
+        scripts = {unicodedata.name(c).split()[0] for c in self.mensagem if c.isalpha()}
+        return len(scripts) > 1
+
+    def checar_links(self):
+        regex = r'(https?://\S+|www\.\S+)'
+        return bool(re.search(regex, self.mensagem))
+
+    def detectar_idioma(self):
+        try:
+            return detect(self.mensagem)
+        except:
+            return "indeterminado"
+
     def retorno_dicionario(self):
         return {
-            'numeros':self.checar_emoji(),
-            'letras':self.checar_letras(),
-            'pontuacao':self.checar_pontuacao(),
-            'emojis':self.checar_emoji()
+            'numeros': self.checar_numeros(),
+            'letras': self.checar_letras(),
+            'pontuacao': self.checar_pontuacao(),
+            'multiplos_alfabetos': self.checar_alfabetos(),
+            'emojis': self.checar_emoji(),
+            'links': self.checar_links(),
+            'idioma': self.detectar_idioma(),
         }
-
-classificador = Classificador(mensagem_teste)
-print(classificador.retorno_dicionario())
-
-classificador.atualizar_mensagem(nova_mensagem_teste)
-print(classificador.retorno_dicionario())

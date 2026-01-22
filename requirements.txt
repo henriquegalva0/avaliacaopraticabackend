@@ -1,4 +1,6 @@
 emoji
 flask
+langdetect
+re
 unicode
 string

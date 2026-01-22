@@ -6,6 +6,16 @@
     <title>Classificador de Textos</title>
 </head>
 <body>
-    
+    <form method="POST">
+        Mensagem: <input type="text" id="mensagem" name="mensagem"><br>
+        <input type="submit" value="Classificar">
+    </form>
+
+    {% if classificacao %}
+        <h2>Resultado da Classificação:</h2>
+        {% for item, classe in classificacao.items() %}
+            <li><strong>{{ item }}:</strong> {{ classe }}</li>
+        {% endfor %}
+    {% endif %}
 </body>
 </html>

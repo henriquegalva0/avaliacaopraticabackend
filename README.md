@@ -146,10 +146,10 @@ python -m venv .venv
 Após seu ambiente virtual ser criado, instale todas as dependências dentro dele, executando:
 - Windows
 ```
-    .venv\Scripts\activate.bat && pip install -r requirements.txt
+    .\.venv\Scripts\Activate.ps1
+    pip install -r requirements.txt
 ```
 - Linux
-
 ```
     source .venv/bin/activate && pip install -r requirements.txt
 ```
